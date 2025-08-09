@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GetMoneyGou - 金融数据分析平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .upload-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .upload-section h2 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        
+        .upload-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-group input, .form-group textarea {
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .file-input {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        .file-input input[type=file] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .file-input-label {
+            display: block;
+            padding: 1rem;
+            border: 2px dashed #667eea;
+            border-radius: 5px;
+            text-align: center;
+            background-color: #f8f9ff;
+            transition: all 0.3s;
+        }
+        
+        .file-input:hover .file-input-label {
+            background-color: #e8ebff;
+            border-color: #5a6fd8;
+        }
+        
+        .upload-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .upload-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .upload-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .datasets-section, .models-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .datasets-section h2 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        
+        .dataset-card {
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: box-shadow 0.3s;
+        }
+        
+        .dataset-card:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .dataset-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .dataset-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .dataset-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .info-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.25rem;
+        }
+        
+        .info-value {
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .message {
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+        
+        .message.success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .message.error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .model-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            align-items: center;
+        }
+
+        .create-model-btn, .train-model-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .create-model-btn:hover, .train-model-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .model-card {
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: box-shadow 0.3s;
+            position: relative;
+        }
+
+        .model-card:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .model-card.training {
+            border-left: 4px solid #ffc107;
+        }
+
+        .model-card.completed {
+            border-left: 4px solid #28a745;
+        }
+
+        .model-card.failed {
+            border-left: 4px solid #dc3545;
+        }
+
+        .model-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .model-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .model-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background-color: #f8f9fa;
+            color: #6c757d;
+        }
+
+        .status-training {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-completed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-failed {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .model-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .metric-item {
+            text-align: center;
+            padding: 0.75rem;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            color: #666;
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .model-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        /* AI解释对话框样式 */
+        .ai-dialog-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 1000;
+        }
+
+        .ai-dialog {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 800px;
+            height: 80%;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ai-dialog-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e1e5e9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ai-dialog-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .ai-dialog-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+
+        .ai-dialog-close:hover {
+            background-color: #f8f9fa;
+        }
+
+        .ai-dialog-content {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ai-explanation {
+            background-color: #f8f9ff;
+            border: 1px solid #e8ebff;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+
+        .ai-chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ai-chat-messages {
+            flex: 1;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .ai-message {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+        }
+
+        .ai-message.user {
+            background-color: #e3f2fd;
+            margin-left: 2rem;
+            text-align: right;
+        }
+
+        .ai-message.assistant {
+            background-color: #f5f5f5;
+            margin-right: 2rem;
+        }
+
+        .ai-message-content {
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        .ai-message-time {
+            font-size: 0.75rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+
+        .ai-chat-input {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .ai-chat-input input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #e1e5e9;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .ai-chat-input button {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .ai-chat-input button:hover {
+            opacity: 0.9;
+        }
+
+        .ai-chat-input button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>GetMoneyGou</h1>
+            <p>智能金融数据分析与预测平台</p>
+        </div>
+        
+        <div class="upload-section">
+            <h2>📁 上传数据文件</h2>
+            <form id="uploadForm" class="upload-form">
+                <div class="form-group">
+                    <label for="datasetName">数据集名称</label>
+                    <input type="text" id="datasetName" name="name" placeholder="请输入数据集名称">
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">描述（可选）</label>
+                    <textarea id="description" name="description" rows="3" placeholder="请描述数据集的内容和来源"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>CSV文件</label>
+                    <div class="file-input">
+                        <input type="file" id="csvFile" name="file" accept=".csv" required>
+                        <label for="csvFile" class="file-input-label">
+                            <span id="fileLabel">点击选择CSV文件或拖拽文件到此处</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <button type="submit" class="upload-btn" id="uploadBtn">
+                    📤 上传文件
+                </button>
+            </form>
+            
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>正在上传和处理文件，请稍候...</p>
+            </div>
+            
+            <div id="message"></div>
+        </div>
+        
+        <div class="datasets-section">
+            <h2>📊 数据集列表</h2>
+            <div id="datasetsList">
+                <p>正在加载数据集...</p>
+            </div>
+        </div>
+
+        <div class="models-section" style="display: none;">
+            <h2>🤖 机器学习模型</h2>
+            <div class="model-controls">
+                <button id="createModelBtn" class="create-model-btn">
+                    ➕ 创建新模型
+                </button>
+                <select id="algorithmSelect" style="display: none;">
+                    <option value="">选择算法</option>
+                    <option value="logistic_regression">逻辑回归</option>
+                    <option value="random_forest">随机森林</option>
+                    <option value="svm">支持向量机</option>
+                    <option value="gradient_boosting">梯度提升</option>
+                </select>
+                <button id="trainModelBtn" class="train-model-btn" style="display: none;">
+                    🚀 开始训练
+                </button>
+            </div>
+            <div id="modelsList">
+                <p>请先选择数据集</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI解释对话框 -->
+    <div id="aiDialogOverlay" class="ai-dialog-overlay">
+        <div class="ai-dialog">
+            <div class="ai-dialog-header">
+                <div class="ai-dialog-title">🤖 AI模型解释</div>
+                <button class="ai-dialog-close" onclick="closeAIDialog()">×</button>
+            </div>
+            <div class="ai-dialog-content">
+                <div id="aiExplanation" class="ai-explanation"></div>
+                <div class="ai-chat-container">
+                    <h4>💬 继续对话</h4>
+                    <div id="aiChatMessages" class="ai-chat-messages"></div>
+                    <div class="ai-chat-input">
+                        <input type="text" id="aiChatInput" placeholder="请输入您的问题..." onkeypress="handleChatKeyPress(event)">
+                        <button id="aiChatSend" onclick="sendChatMessage()">发送</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 文件选择处理
+        document.getElementById('csvFile').addEventListener('change', function(e) {
+            const fileLabel = document.getElementById('fileLabel');
+            if (e.target.files.length > 0) {
+                fileLabel.textContent = `已选择: ${e.target.files[0].name}`;
+            } else {
+                fileLabel.textContent = '点击选择CSV文件或拖拽文件到此处';
+            }
+        });
+        
+        // 表单提交处理
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            const fileInput = document.getElementById('csvFile');
+            const nameInput = document.getElementById('datasetName');
+            const descInput = document.getElementById('description');
+            
+            if (!fileInput.files[0]) {
+                showMessage('请选择一个CSV文件', 'error');
+                return;
+            }
+            
+            formData.append('file', fileInput.files[0]);
+            formData.append('name', nameInput.value || fileInput.files[0].name);
+            formData.append('description', descInput.value);
+            
+            // 显示加载状态
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('uploadBtn').disabled = true;
+            document.getElementById('message').innerHTML = '';
+            
+            try {
+                const response = await fetch('/api/data/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showMessage(`文件上传成功！${result.validation_message}`, 'success');
+                    document.getElementById('uploadForm').reset();
+                    document.getElementById('fileLabel').textContent = '点击选择CSV文件或拖拽文件到此处';
+                    loadDatasets(); // 重新加载数据集列表
+                } else {
+                    showMessage(`上传失败: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`上传失败: ${error.message}`, 'error');
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('uploadBtn').disabled = false;
+            }
+        });
+        
+        // 显示消息
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.innerHTML = `<div class="message ${type}">${message}</div>`;
+        }
+        
+        // 加载数据集列表
+        async function loadDatasets() {
+            try {
+                const response = await fetch('/api/data/datasets');
+                const result = await response.json();
+                
+                if (response.ok) {
+                    displayDatasets(result.datasets);
+                } else {
+                    document.getElementById('datasetsList').innerHTML = 
+                        `<p style="color: red;">加载数据集失败: ${result.error}</p>`;
+                }
+            } catch (error) {
+                document.getElementById('datasetsList').innerHTML = 
+                    `<p style="color: red;">加载数据集失败: ${error.message}</p>`;
+            }
+        }
+        
+        // 显示数据集列表
+        function displayDatasets(datasets) {
+            const container = document.getElementById('datasetsList');
+            
+            if (datasets.length === 0) {
+                container.innerHTML = '<p>暂无数据集，请上传CSV文件。</p>';
+                return;
+            }
+            
+            const html = datasets.map(dataset => `
+                <div class="dataset-card" onclick="selectDataset(${dataset.id})">
+                    <div class="dataset-header">
+                        <div class="dataset-name">${dataset.name}</div>
+                        <button class="action-btn btn-primary" onclick="event.stopPropagation(); selectDataset(${dataset.id})">
+                            选择数据集
+                        </button>
+                    </div>
+                    <div class="dataset-info">
+                        <div class="info-item">
+                            <div class="info-label">文件名</div>
+                            <div class="info-value">${dataset.filename}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">记录数</div>
+                            <div class="info-value">${dataset.total_records.toLocaleString()}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">上传时间</div>
+                            <div class="info-value">${new Date(dataset.upload_time).toLocaleString()}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">时间范围</div>
+                            <div class="info-value">
+                                ${new Date(dataset.date_range_start).toLocaleDateString()} -
+                                ${new Date(dataset.date_range_end).toLocaleDateString()}
+                            </div>
+                        </div>
+                    </div>
+                    ${dataset.description ? `<p><strong>描述:</strong> ${dataset.description}</p>` : ''}
+                </div>
+            `).join('');
+            
+            container.innerHTML = html;
+        }
+        
+        // 全局变量
+        let currentDatasetId = null;
+
+        // 选择数据集
+        function selectDataset(datasetId) {
+            currentDatasetId = datasetId;
+
+            // 显示模型管理区域
+            document.querySelector('.models-section').style.display = 'block';
+
+            // 高亮选中的数据集
+            document.querySelectorAll('.dataset-card').forEach(card => {
+                card.style.border = '1px solid #e1e5e9';
+            });
+            event.target.closest('.dataset-card').style.border = '2px solid #007bff';
+
+            // 加载该数据集的模型
+            loadModels(datasetId);
+
+            showMessage(`已选择数据集，可以开始创建模型`, 'success');
+        }
+
+        // 模型创建相关
+        document.getElementById('createModelBtn').addEventListener('click', function() {
+            if (!currentDatasetId) {
+                showMessage('请先选择一个数据集', 'error');
+                return;
+            }
+
+            const algorithmSelect = document.getElementById('algorithmSelect');
+            const trainBtn = document.getElementById('trainModelBtn');
+
+            if (algorithmSelect.style.display === 'none') {
+                algorithmSelect.style.display = 'inline-block';
+                trainBtn.style.display = 'inline-block';
+                this.textContent = '❌ 取消';
+            } else {
+                algorithmSelect.style.display = 'none';
+                trainBtn.style.display = 'none';
+                algorithmSelect.value = '';
+                this.textContent = '➕ 创建新模型';
+            }
+        });
+
+        document.getElementById('trainModelBtn').addEventListener('click', async function() {
+            const algorithm = document.getElementById('algorithmSelect').value;
+            if (!algorithm) {
+                showMessage('请选择一个算法', 'error');
+                return;
+            }
+
+            const modelData = {
+                algorithm: algorithm,
+                name: `${getAlgorithmName(algorithm)}模型_${new Date().toLocaleString()}`,
+                task_type: 'classification',
+                test_size: 0.2,
+                prediction_horizon: 1
+            };
+
+            try {
+                const response = await fetch(`/api/ml/datasets/${currentDatasetId}/models`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(modelData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showMessage('模型创建成功，正在后台训练...', 'success');
+                    // 重置UI
+                    document.getElementById('algorithmSelect').style.display = 'none';
+                    document.getElementById('trainModelBtn').style.display = 'none';
+                    document.getElementById('createModelBtn').textContent = '➕ 创建新模型';
+                    document.getElementById('algorithmSelect').value = '';
+                    // 刷新模型列表
+                    loadModels(currentDatasetId);
+                } else {
+                    showMessage(`创建模型失败: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`创建模型失败: ${error.message}`, 'error');
+            }
+        });
+
+        function getAlgorithmName(algorithm) {
+            const names = {
+                'logistic_regression': '逻辑回归',
+                'random_forest': '随机森林',
+                'svm': '支持向量机',
+                'gradient_boosting': '梯度提升'
+            };
+            return names[algorithm] || algorithm;
+        }
+
+        // 加载模型列表
+        async function loadModels(datasetId) {
+            try {
+                const response = await fetch(`/api/ml/datasets/${datasetId}/models`);
+                const result = await response.json();
+
+                if (response.ok) {
+                    displayModels(result.models);
+                } else {
+                    document.getElementById('modelsList').innerHTML =
+                        `<p style="color: red;">加载模型失败: ${result.error}</p>`;
+                }
+            } catch (error) {
+                document.getElementById('modelsList').innerHTML =
+                    `<p style="color: red;">加载模型失败: ${error.message}</p>`;
+            }
+        }
+
+        // 显示模型列表
+        function displayModels(models) {
+            const container = document.getElementById('modelsList');
+
+            if (models.length === 0) {
+                container.innerHTML = '<p>暂无模型，请创建新模型。</p>';
+                return;
+            }
+
+            const html = models.map(model => {
+                const statusClass = `status-${model.status}`;
+                const cardClass = model.status;
+
+                let metricsHtml = '';
+                if (model.status === 'completed') {
+                    metricsHtml = `
+                        <div class="model-metrics">
+                            ${model.accuracy !== null ? `
+                                <div class="metric-item">
+                                    <div class="metric-label">准确率</div>
+                                    <div class="metric-value">${(model.accuracy * 100).toFixed(1)}%</div>
+                                </div>
+                            ` : ''}
+                            ${model.precision !== null ? `
+                                <div class="metric-item">
+                                    <div class="metric-label">精确率</div>
+                                    <div class="metric-value">${(model.precision * 100).toFixed(1)}%</div>
+                                </div>
+                            ` : ''}
+                            ${model.recall !== null ? `
+                                <div class="metric-item">
+                                    <div class="metric-label">召回率</div>
+                                    <div class="metric-value">${(model.recall * 100).toFixed(1)}%</div>
+                                </div>
+                            ` : ''}
+                            ${model.f1_score !== null ? `
+                                <div class="metric-item">
+                                    <div class="metric-label">F1分数</div>
+                                    <div class="metric-value">${(model.f1_score * 100).toFixed(1)}%</div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="model-card ${cardClass}">
+                        <div class="model-header">
+                            <div class="model-name">${model.name}</div>
+                            <div class="model-status ${statusClass}">
+                                ${getStatusText(model.status)}
+                            </div>
+                        </div>
+                        <div class="model-info">
+                            <p><strong>算法:</strong> ${getAlgorithmName(model.algorithm)}</p>
+                            <p><strong>创建时间:</strong> ${new Date(model.created_time).toLocaleString()}</p>
+                            ${model.training_start_time ? `<p><strong>训练开始:</strong> ${new Date(model.training_start_time).toLocaleString()}</p>` : ''}
+                            ${model.training_end_time ? `<p><strong>训练完成:</strong> ${new Date(model.training_end_time).toLocaleString()}</p>` : ''}
+                        </div>
+                        ${metricsHtml}
+                        <div class="model-actions">
+                            ${model.status === 'completed' ? `
+                                <button class="action-btn btn-primary" onclick="viewModelDetails(${model.id})">
+                                    📊 查看详情
+                                </button>
+                                <button class="action-btn btn-secondary" onclick="explainModel(${model.id})">
+                                    🤖 AI解释
+                                </button>
+                                <button class="action-btn btn-secondary" onclick="generateCode(${model.id})">
+                                    💻 生成代码
+                                </button>
+                            ` : ''}
+                            <button class="action-btn btn-danger" onclick="deleteModel(${model.id})">
+                                🗑️ 删除
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = html;
+        }
+
+        function getStatusText(status) {
+            const statusTexts = {
+                'pending': '等待中',
+                'training': '训练中',
+                'completed': '已完成',
+                'failed': '失败'
+            };
+            return statusTexts[status] || status;
+        }
+
+        // 模型操作函数
+        async function viewModelDetails(modelId) {
+            try {
+                const response = await fetch(`/api/ml/models/${modelId}`);
+                const model = await response.json();
+
+                if (response.ok) {
+                    alert(`模型详情:\n\n准确率: ${(model.accuracy * 100).toFixed(2)}%\n精确率: ${(model.precision * 100).toFixed(2)}%\n召回率: ${(model.recall * 100).toFixed(2)}%\nF1分数: ${(model.f1_score * 100).toFixed(2)}%`);
+                } else {
+                    showMessage('获取模型详情失败', 'error');
+                }
+            } catch (error) {
+                showMessage('获取模型详情失败', 'error');
+            }
+        }
+
+        async function explainModel(modelId) {
+            try {
+                // 显示加载状态
+                showMessage('正在生成AI解释，请稍候...', 'success');
+
+                const response = await fetch(`/api/ai/models/${modelId}/explain`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // 显示AI解释对话框
+                    showAIExplanationDialog(modelId, result);
+                } else {
+                    showMessage(`AI解释失败: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`AI解释失败: ${error.message}`, 'error');
+            }
+        }
+
+        async function generateCode(modelId) {
+            try {
+                // 显示语言选择对话框
+                const language = await showLanguageSelectionDialog();
+                if (!language) return;
+
+                // 显示加载状态
+                showMessage(`正在生成${language === 'python' ? 'Python' : 'C++'}代码，请稍候...`, 'success');
+
+                const response = await fetch(`/api/codegen/models/${modelId}/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        language: language
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // 显示代码生成结果对话框
+                    showCodeGenerationDialog(result);
+                } else {
+                    showMessage(`代码生成失败: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`代码生成失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 显示语言选择对话框
+        function showLanguageSelectionDialog() {
+            return new Promise((resolve) => {
+                const language = prompt('请选择编程语言:\n1. python\n2. cpp\n\n请输入语言名称:');
+                if (language && ['python', 'cpp'].includes(language.toLowerCase())) {
+                    resolve(language.toLowerCase());
+                } else if (language) {
+                    alert('不支持的语言，请输入 python 或 cpp');
+                    resolve(null);
+                } else {
+                    resolve(null);
+                }
+            });
+        }
+
+        // 显示代码生成结果对话框
+        function showCodeGenerationDialog(result) {
+            const overlay = document.createElement('div');
+            overlay.className = 'ai-dialog-overlay';
+            overlay.style.display = 'block';
+
+            const dialog = document.createElement('div');
+            dialog.className = 'ai-dialog';
+            dialog.style.width = '95%';
+            dialog.style.maxWidth = '1200px';
+            dialog.style.height = '90%';
+
+            const languageName = result.language === 'python' ? 'Python' : 'C++';
+            const fileExtension = result.language === 'python' ? '.py' : '.cpp';
+
+            dialog.innerHTML = `
+                <div class="ai-dialog-header">
+                    <div class="ai-dialog-title">💻 ${languageName}代码生成结果</div>
+                    <button class="ai-dialog-close" onclick="this.closest('.ai-dialog-overlay').remove()">×</button>
+                </div>
+                <div class="ai-dialog-content">
+                    <div style="margin-bottom: 1rem;">
+                        <strong>模型:</strong> ${result.model_info.name} (${result.model_info.algorithm})
+                        <br>
+                        <strong>语言:</strong> ${languageName}
+                        <br>
+                        <strong>生成时间:</strong> ${new Date(result.generated_time).toLocaleString()}
+                    </div>
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                        <button class="action-btn btn-primary" onclick="downloadCode('${result.code}', 'model_${result.model_info.id}_${result.language}_code${fileExtension}')">
+                            📥 下载代码
+                        </button>
+                        <button class="action-btn btn-secondary" onclick="copyCodeToClipboard('${result.code.replace(/'/g, "\\'")}')">
+                            📋 复制代码
+                        </button>
+                        <button class="action-btn btn-secondary" onclick="editCode(${result.code_id}, '${result.language}')">
+                            ✏️ 编辑代码
+                        </button>
+                        <button class="action-btn btn-secondary" onclick="testGeneratedCode(${result.code_id})">
+                            🧪 测试代码
+                        </button>
+                    </div>
+                    <div style="flex: 1; border: 1px solid #e1e5e9; border-radius: 8px; overflow: hidden;">
+                        <div style="background-color: #f8f9fa; padding: 0.5rem 1rem; border-bottom: 1px solid #e1e5e9; font-weight: 500;">
+                            ${languageName}代码
+                        </div>
+                        <pre style="margin: 0; padding: 1rem; overflow: auto; height: 400px; background-color: #f8f9ff;"><code>${result.code}</code></pre>
+                    </div>
+                </div>
+            `;
+
+            overlay.appendChild(dialog);
+            document.body.appendChild(overlay);
+
+            // 点击外部关闭
+            overlay.addEventListener('click', function(event) {
+                if (event.target === overlay) {
+                    overlay.remove();
+                }
+            });
+        }
+
+        // 下载代码文件
+        function downloadCode(code, filename) {
+            const blob = new Blob([code], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            showMessage('代码文件下载成功', 'success');
+        }
+
+        // 复制代码到剪贴板
+        function copyCodeToClipboard(code) {
+            navigator.clipboard.writeText(code).then(() => {
+                showMessage('代码已复制到剪贴板', 'success');
+            }).catch(() => {
+                showMessage('复制失败，请手动复制', 'error');
+            });
+        }
+
+        // 编辑代码
+        async function editCode(codeId, language) {
+            try {
+                // 获取代码详情
+                const response = await fetch(`/api/codegen/codes/${codeId}`);
+                const codeData = await response.json();
+
+                if (response.ok) {
+                    showCodeEditor(codeData);
+                } else {
+                    showMessage(`获取代码失败: ${codeData.error}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`获取代码失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 显示代码编辑器
+        function showCodeEditor(codeData) {
+            const overlay = document.createElement('div');
+            overlay.className = 'ai-dialog-overlay';
+            overlay.style.display = 'block';
+
+            const dialog = document.createElement('div');
+            dialog.className = 'ai-dialog';
+            dialog.style.width = '95%';
+            dialog.style.maxWidth = '1400px';
+            dialog.style.height = '90%';
+
+            const languageName = codeData.language === 'python' ? 'Python' : 'C++';
+
+            dialog.innerHTML = `
+                <div class="ai-dialog-header">
+                    <div class="ai-dialog-title">✏️ ${languageName}代码编辑器</div>
+                    <button class="ai-dialog-close" onclick="this.closest('.ai-dialog-overlay').remove()">×</button>
+                </div>
+                <div class="ai-dialog-content">
+                    <div style="margin-bottom: 1rem;">
+                        <strong>代码ID:</strong> ${codeData.id}
+                        <br>
+                        <strong>语言:</strong> ${languageName}
+                        <br>
+                        <strong>生成时间:</strong> ${new Date(codeData.generated_time).toLocaleString()}
+                    </div>
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                        <button class="action-btn btn-primary" onclick="saveEditedCode(${codeData.id})">
+                            💾 保存代码
+                        </button>
+                        <button class="action-btn btn-secondary" onclick="testEditedCode(${codeData.id})">
+                            🧪 测试代码
+                        </button>
+                        <button class="action-btn btn-secondary" onclick="resetCode(${codeData.id})">
+                            🔄 重置代码
+                        </button>
+                    </div>
+                    <div style="flex: 1; border: 1px solid #e1e5e9; border-radius: 8px; overflow: hidden;">
+                        <div style="background-color: #f8f9fa; padding: 0.5rem 1rem; border-bottom: 1px solid #e1e5e9; font-weight: 500;">
+                            ${languageName}代码编辑器
+                        </div>
+                        <textarea id="codeEditor" style="width: 100%; height: 500px; padding: 1rem; border: none; font-family: 'Courier New', monospace; font-size: 14px; line-height: 1.5; resize: none; outline: none;">${codeData.code_content}</textarea>
+                    </div>
+                </div>
+            `;
+
+            overlay.appendChild(dialog);
+            document.body.appendChild(overlay);
+
+            // 存储原始代码
+            window.originalCode = codeData.code_content;
+
+            // 点击外部关闭
+            overlay.addEventListener('click', function(event) {
+                if (event.target === overlay) {
+                    overlay.remove();
+                }
+            });
+        }
+
+        // 保存编辑的代码
+        async function saveEditedCode(codeId) {
+            try {
+                const codeEditor = document.getElementById('codeEditor');
+                const updatedCode = codeEditor.value;
+
+                const response = await fetch(`/api/codegen/codes/${codeId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        code_content: updatedCode
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showMessage('代码保存成功', 'success');
+                    window.originalCode = updatedCode; // 更新原始代码
+                } else {
+                    showMessage(`保存失败: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`保存失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 测试编辑的代码
+        async function testEditedCode(codeId) {
+            try {
+                // 先保存代码
+                await saveEditedCode(codeId);
+
+                // 然后测试
+                await testGeneratedCode(codeId);
+            } catch (error) {
+                showMessage(`测试失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 重置代码
+        function resetCode(codeId) {
+            if (confirm('确定要重置代码到原始版本吗？未保存的修改将丢失。')) {
+                const codeEditor = document.getElementById('codeEditor');
+                codeEditor.value = window.originalCode;
+                showMessage('代码已重置', 'success');
+            }
+        }
+
+        // 测试生成的代码
+        async function testGeneratedCode(codeId) {
+            try {
+                showMessage('正在测试代码，请稍候...', 'success');
+
+                const response = await fetch(`/api/codegen/codes/${codeId}/test`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        test_data: []
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    const testResult = result.test_result;
+                    const status = testResult.status === 'success' ? '✅ 成功' : '❌ 失败';
+
+                    let message = `代码测试${status}\n\n` +
+                                `状态: ${testResult.message}\n` +
+                                `执行时间: ${testResult.execution_time}s\n` +
+                                `内存使用: ${testResult.memory_usage}\n` +
+                                `测试通过率: ${testResult.summary.success_rate}%`;
+
+                    if (testResult.warnings && testResult.warnings.length > 0) {
+                        message += '\n\n警告:\n' + testResult.warnings.join('\n');
+                    }
+
+                    if (testResult.compilation_time) {
+                        message += `\n编译时间: ${testResult.compilation_time}s`;
+                    }
+
+                    alert(message);
+                } else {
+                    showMessage(`代码测试失败: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`代码测试失败: ${error.message}`, 'error');
+            }
+        }
+
+        async function deleteModel(modelId) {
+            if (!confirm('确定要删除这个模型吗？')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/ml/models/${modelId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    showMessage('模型删除成功', 'success');
+                    loadModels(currentDatasetId);
+                } else {
+                    showMessage('删除模型失败', 'error');
+                }
+            } catch (error) {
+                showMessage('删除模型失败', 'error');
+            }
+        }
+
+        // AI对话相关变量
+        let currentAIModelId = null;
+        let currentSessionId = null;
+
+        // 显示AI解释对话框
+        function showAIExplanationDialog(modelId, result) {
+            currentAIModelId = modelId;
+            currentSessionId = result.session_id;
+
+            // 显示解释内容
+            document.getElementById('aiExplanation').textContent = result.explanation;
+
+            // 清空聊天记录
+            document.getElementById('aiChatMessages').innerHTML = '';
+
+            // 显示对话框
+            document.getElementById('aiDialogOverlay').style.display = 'block';
+
+            // 聚焦到输入框
+            setTimeout(() => {
+                document.getElementById('aiChatInput').focus();
+            }, 100);
+        }
+
+        // 关闭AI对话框
+        function closeAIDialog() {
+            document.getElementById('aiDialogOverlay').style.display = 'none';
+            currentAIModelId = null;
+            currentSessionId = null;
+        }
+
+        // 处理聊天输入的回车键
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+
+        // 发送聊天消息
+        async function sendChatMessage() {
+            const input = document.getElementById('aiChatInput');
+            const sendBtn = document.getElementById('aiChatSend');
+            const question = input.value.trim();
+
+            if (!question || !currentAIModelId || !currentSessionId) {
+                return;
+            }
+
+            // 禁用输入
+            input.disabled = true;
+            sendBtn.disabled = true;
+            sendBtn.textContent = '发送中...';
+
+            // 添加用户消息到聊天记录
+            addChatMessage('user', question);
+
+            // 清空输入框
+            input.value = '';
+
+            try {
+                const response = await fetch(`/api/ai/models/${currentAIModelId}/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session_id: currentSessionId,
+                        question: question
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // 添加AI回复到聊天记录
+                    addChatMessage('assistant', result.response);
+                } else {
+                    addChatMessage('assistant', `抱歉，回复失败: ${result.error}`);
+                }
+            } catch (error) {
+                addChatMessage('assistant', `抱歉，网络错误: ${error.message}`);
+            } finally {
+                // 恢复输入
+                input.disabled = false;
+                sendBtn.disabled = false;
+                sendBtn.textContent = '发送';
+                input.focus();
+            }
+        }
+
+        // 添加聊天消息
+        function addChatMessage(role, content) {
+            const messagesContainer = document.getElementById('aiChatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `ai-message ${role}`;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'ai-message-content';
+            contentDiv.textContent = content;
+
+            const timeDiv = document.createElement('div');
+            timeDiv.className = 'ai-message-time';
+            timeDiv.textContent = new Date().toLocaleTimeString();
+
+            messageDiv.appendChild(contentDiv);
+            messageDiv.appendChild(timeDiv);
+            messagesContainer.appendChild(messageDiv);
+
+            // 滚动到底部
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // 点击对话框外部关闭
+        document.getElementById('aiDialogOverlay').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeAIDialog();
+            }
+        });
+
+        // 定时刷新模型状态
+        setInterval(() => {
+            if (currentDatasetId) {
+                loadModels(currentDatasetId);
+            }
+        }, 10000); // 每10秒刷新一次
+
+        // 页面加载时获取数据集列表
+        document.addEventListener('DOMContentLoaded', loadDatasets);
+    </script>
+</body>
+</html>
